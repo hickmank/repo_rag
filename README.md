@@ -60,7 +60,7 @@ We use anaconda.
 >> pip install torch torchvision torchaudio
 >> pip install langchain chromadb sentence-transformers ollama
 >> pip install langchain-community langchain-huggingface
->> pip install unstructured
+>> pip install unstructured langchain-ollama langchain-chroma
 ```
 
 - **langchain**: orchestration
