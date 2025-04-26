@@ -74,3 +74,10 @@ Build the RAG database:
 ```
 >> python ingest.py
 ```
+
+Query the LLM with the database:
+--------------------------------
+
+```
+>> python query.py
+```
