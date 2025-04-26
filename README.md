@@ -54,10 +54,13 @@ Create python environment:
 We use anaconda.
 
 ```
->> conda create -n rag_env python=3.12 pip
+>> conda create -n rag_env python=3.10 pip
 >> conda activate rag_env
 >> pip install --upgrade pip
+>> pip install torch torchvision torchaudio
 >> pip install langchain chromadb sentence-transformers ollama
+>> pip install langchain-community langchain-huggingface
+>> pip install unstructured
 ```
 
 - **langchain**: orchestration
@@ -65,3 +68,9 @@ We use anaconda.
 - **sentence-transformers**: embedding model
 - **ollama**: python bindings for ollama CLI
 
+Build the RAG database:
+-----------------------
+
+```
+>> python ingest.py
+```
