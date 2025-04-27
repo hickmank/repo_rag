@@ -61,6 +61,7 @@ We use anaconda.
 >> pip install langchain chromadb sentence-transformers ollama
 >> pip install langchain-community langchain-huggingface
 >> pip install unstructured langchain-ollama langchain-chroma
+>> pip install streamlit
 ```
 
 - **langchain**: orchestration
@@ -80,4 +81,11 @@ Query the LLM with the database:
 
 ```
 >> python query.py
+```
+
+WebUI with streamlit:
+---------------------
+
+```
+>> streamlit run app.py
 ```
