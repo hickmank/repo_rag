@@ -7,8 +7,15 @@ torch.classes.__path__ = []
 import streamlit as st
 from langchain_ollama import OllamaLLM as Ollama
 from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+
+
+# To turn on conversational memory toggle the following.
+# NOTE: Under Construction! Expect errors...
+CONVERSATIONAL = False
 
 # 1) Load you DB and models
 @st.cache_resource
@@ -31,16 +38,30 @@ def load_components():
         n_ctx=4096,
     )
 
-    # QA chain
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectordb.as_retriever(search_kwargs={"k": 5}),
-        return_source_documents=True,
+    # Set up in-memory chat history
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_message=True
     )
 
-    return qa
+    if CONVERSATIONAL:
+        # Build the conversational RAG chain
+        qa = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=vectordb.as_retriever(search_kwargs={"k": 5}),
+            memory=memory,
+            return_source_documents=True
+        )
+    else:
+        # QA chain
+        qa = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=vectordb.as_retriever(search_kwargs={"k": 5}),
+            return_source_documents=True,
+        )
 
+    return qa
 
 qa_chain = load_components()
 
@@ -62,10 +83,18 @@ def handle_submit():
     query = st.session_state.query_input.strip()
     if not query:
         return
-    with st.spinner("Thinking..."):
-        # invoke() returns a dict; "result" holds the answer
-        response = qa_chain.invoke({"query": query})
-    answer = response["result"]
+    if CONVERSATIONAL:
+        with st.spinner("Thinking..."):
+            # Now invoke the conversation chain: it returns 
+            # {"answer": ..., "chat_history": ...}
+            response = qa_chain({"question": query})
+        answer = response["answer"]
+    else:
+        with st.spinner("Thinking..."):
+            # invoke() returns a dict; "result" holds the answer
+            response = qa_chain.invoke({"query": query})
+        answer = response["result"]
+
     # store in history
     st.session_state.history.append({"q": query, "a": answer})
     # clear input

@@ -10,6 +10,8 @@ Requirements and Dependencies:
 - Ubuntu
 - Python
 - Ollama
+- Streamlit
+- LangChain
 
 Instructions:
 -------------
