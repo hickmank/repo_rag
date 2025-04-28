@@ -15,7 +15,7 @@ from langchain_chroma import Chroma
 
 # To turn on conversational memory toggle the following.
 # NOTE: Under Construction! Expect errors...
-CONVERSATIONAL = False
+CONVERSATIONAL = True
 
 # 1) Load you DB and models
 @st.cache_resource
@@ -41,7 +41,7 @@ def load_components():
     # Set up in-memory chat history
     memory = ConversationBufferMemory(
         memory_key="chat_history",
-        return_message=True
+        return_messages=True
     )
 
     if CONVERSATIONAL:
@@ -50,7 +50,7 @@ def load_components():
             llm=llm,
             retriever=vectordb.as_retriever(search_kwargs={"k": 5}),
             memory=memory,
-            return_source_documents=True
+            return_source_documents=False
         )
     else:
         # QA chain
@@ -87,7 +87,7 @@ def handle_submit():
         with st.spinner("Thinking..."):
             # Now invoke the conversation chain: it returns 
             # {"answer": ..., "chat_history": ...}
-            response = qa_chain({"question": query})
+            response = qa_chain.invoke({"question": query})
         answer = response["answer"]
     else:
         with st.spinner("Thinking..."):
