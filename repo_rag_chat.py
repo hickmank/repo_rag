@@ -12,6 +12,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
+from langchain.prompts import PromptTemplate
 
 
 def parse_args():
@@ -111,12 +112,38 @@ def run_repo_rag(
             return_messages=True
         )
 
+        # Feed a prompt to instruct use of conversation history.
+        condense_question_prompt = PromptTemplate.from_template(
+            "Given the following conversation and a follow up question, "
+            "rephrase the follow up question to be a standalone question.\n\n"
+            "Chat History:\n{chat_history}\n"
+            "Follow Up Input: {question}\n"
+            "Standalone question:"
+        )
+
+        # Set up a prompt to allow LLM to fallback on previous knowledge
+        combine_documents_prompt = PromptTemplate.from_template(
+            """You are an assistant that knows your local codebase *and* general world
+            facts.
+
+              Context snippets from codebase (if any):
+              {context}
+  
+            Answer the question: {question}
+
+            Use a synthesis of your own knowledge and the context to answer the
+            question.
+            """
+        )
+
         # Build the conversational RAG chain
         qa = ConversationalRetrievalChain.from_llm(
             llm=llm,
             retriever=vectordb.as_retriever(search_kwargs={"k": 5}),
             memory=memory,
-            return_source_documents=False
+            condense_question_prompt=condense_question_prompt,
+            combine_docs_chain_kwargs={"prompt": combine_documents_prompt},
+            return_source_documents=False,
         )
 
         return qa
